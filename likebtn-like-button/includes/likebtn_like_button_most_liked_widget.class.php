@@ -309,6 +309,15 @@ class LikeBtnLikeButtonMostLikedWidget extends WP_Widget {
                     $instance[$field] = '';
                 }
             }
+            // Sanitize values.
+            if (in_array($field, array('include_categories', 'exclude_categories'))) {
+                // Convert to int.
+                if (is_array($instance[$field]) && !empty($instance[$field])) {
+                    foreach ($instance[$field] as $i => $value) {
+                        $instance[$field][$i] = (int)$value;
+                    }
+                }
+            }
         }
         return $instance;
     }
@@ -443,16 +452,16 @@ class LikeBtnLikeButtonMostLiked {
 
         // Posts
         if ($has_posts) {
-            $query_post_types = "'" . implode("','", $instance['entity_name']) . "'";
+            $query_post_types = "'" . esc_sql(implode("','", $instance['entity_name'])) . "'";
 
             $query_include_categories = '';
             if (is_array($instance['include_categories']) && count($instance['include_categories'])) {
-                $query_include_categories = "'" . implode("','", $instance['include_categories']) . "'";
+                $query_include_categories = "'" . esc_sql(implode("','", $instance['include_categories'])) . "'";
             }
 
             $query_exclude_categories = '';
             if (is_array($instance['exclude_categories']) && count($instance['exclude_categories'])) {
-                $query_exclude_categories = "'" . implode("','", $instance['exclude_categories']) . "'";
+                $query_exclude_categories = "'" . esc_sql(implode("','", $instance['exclude_categories'])) . "'";
             }
 
             $query_attachment = '';
