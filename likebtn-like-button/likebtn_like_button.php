@@ -3,7 +3,7 @@
   Plugin Name: Like Button Rating ♥ LikeBtn
   Plugin URI: https://likebtn.com/en/wordpress-like-button-plugin
   Description: Add Like button to posts, pages, comments, WooCommerce, BuddyPress, bbPress, custom post types! Sort content by likes! Get instant stats and insights!
-  Version: 2.6.62
+  Version: 2.6.63
   Text Domain: likebtn-like-button
   Author: LikeBtn
   Author URI: https://likebtn.com
@@ -14,7 +14,7 @@
 // ini_set('error_reporting', E_ALL);
 
 // Plugin version
-define('LIKEBTN_VERSION', '2.6.62');
+define('LIKEBTN_VERSION', '2.6.63');
 // Current DB version
 define('LIKEBTN_DB_VERSION', 20);
 
@@ -1703,7 +1703,6 @@ function likebtn_init() {
     if (is_admin()) {
         likebtn_import_config();
     }
-    likebtn_full_reset_run();
     _likebtn_plugin_on_load();
 
     load_plugin_textdomain('likebtn-like-button', false, dirname(plugin_basename(__FILE__)) . '/languages');
@@ -2559,6 +2558,10 @@ function likebtn_admin_init()
         wp_enqueue_script('jquery');
         wp_enqueue_script('jquery-ui-dialog');
         wp_enqueue_style("wp-jquery-ui-dialog");
+    }
+
+    if (is_admin()) {
+        likebtn_full_reset_run();
     }
 }
 
@@ -5997,7 +6000,14 @@ function _likebtn_delete($entity_name, $items)
 // Reset votes & stats
 function likebtn_full_reset_run()
 {
-    if (!empty($_POST['likebtn_full_reset']) && $_POST['likebtn_full_reset'] == 'tZFWPdFC') {
+    if (!empty($_POST['likebtn_full_reset']) && $_POST['likebtn_full_reset'] == 'reset') {
+        if (!(bool)current_user_can( 'manage_options' )
+            || !isset($_POST['nonce'])
+            || !wp_verify_nonce($_POST['nonce'], 'likebtn_full_reset')
+        ) {
+            return;
+        }
+
         likebtn_full_reset();
     }
 }

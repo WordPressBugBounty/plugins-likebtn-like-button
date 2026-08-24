@@ -538,7 +538,8 @@ function likebtn_admin_settings() {
                     <tr valign="top">
                         <td>
                             <form method="post" action="" id="likebtn_fr_form">
-                                <input type="hidden" name="likebtn_full_reset" value="" />
+                                <input type="hidden" name="nonce" value="<?php echo wp_create_nonce( 'likebtn_full_reset' ); ?>" />
+                                <input type="hidden" name="likebtn_full_reset" value="reset" />
                                 <input type="button" class="button-secondary likebtn_ttip" onclick="likebtnFullReset('<?php _e("Votes and stats will be removed permanently and can not be restored. If you want to continue please enter RESET:", 'likebtn-like-button') ?>')" value="<?php _e('Reset Votes & Stats', 'likebtn-like-button'); ?>" title="<?php _e('Remove ALL votes and stats', 'likebtn-like-button'); ?>">
                             </form>
                             <?php if (is_multisite()): ?>

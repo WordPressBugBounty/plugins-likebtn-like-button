@@ -1282,7 +1282,7 @@ function likebtnFullReset(msg_confirm)
 {
     var value = prompt(msg_confirm);
     if (value && value.toLowerCase() == 'reset') {
-        jQuery("#likebtn_fr_form input[name='likebtn_full_reset']:first").val('tZFWPdFC');
+        //jQuery("#likebtn_fr_form input[name='likebtn_full_reset']:first").val('tZFWPdFC');
         jQuery("#likebtn_fr_form").submit();
     }
 }
