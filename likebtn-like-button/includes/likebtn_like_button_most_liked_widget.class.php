@@ -452,16 +452,24 @@ class LikeBtnLikeButtonMostLiked {
 
         // Posts
         if ($has_posts) {
-            $query_post_types = "'" . esc_sql(implode("','", $instance['entity_name'])) . "'";
+            // Sanitize entity names before using in SQL.
+            $entity_names = $instance['entity_name'];
+            foreach ($entity_names as $i => $value) {
+                $entity_names[$i] = esc_sql($value);
+            }
+
+            $query_post_types = "'" . implode("','", $entity_names) . "'";
 
             $query_include_categories = '';
             if (is_array($instance['include_categories']) && count($instance['include_categories'])) {
-                $query_include_categories = "'" . esc_sql(implode("','", $instance['include_categories'])) . "'";
+                // Sanitized in prepareInstanceStatic().
+                $query_include_categories = "'" . implode("','", $instance['include_categories']) . "'";
             }
 
             $query_exclude_categories = '';
             if (is_array($instance['exclude_categories']) && count($instance['exclude_categories'])) {
-                $query_exclude_categories = "'" . esc_sql(implode("','", $instance['exclude_categories'])) . "'";
+                // Sanitized in prepareInstanceStatic().
+                $query_exclude_categories = "'" . implode("','", $instance['exclude_categories']) . "'";
             }
 
             $query_attachment = '';
