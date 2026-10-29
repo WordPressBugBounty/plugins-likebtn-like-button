@@ -282,7 +282,7 @@ function likebtn_admin_votes() {
                         </td>
                         <td>
                             <?php if (likebtn_is_real_ip($votes_item->ip)): ?>
-                                <a href="javascript:likebtnIpInfo('<?php echo esc_attr($votes_item->ip); ?>');" class="likebtn_ttip" title="<?php _e('View IP info', 'likebtn-like-button') ?>"><?php echo esc_html($votes_item->ip); ?></a>
+                                <a href="#" data-ip="<?php echo esc_attr($votes_item->ip); ?>" class="likebtn_ttip likebtn_ip_info_link" title="<?php _e('View IP info', 'likebtn-like-button') ?>"><?php echo esc_html($votes_item->ip); ?></a>
                             <?php else: ?>
                                 <a href="<?php echo admin_url() ?>admin.php?page=likebtn_settings#gdpr" class="likebtn_ttip" title="<?php _e('Viewing info for this IP is not available as GDPR compliance mode is enabled (click to change)', 'likebtn-like-button') ?>" target="blank"><?php echo esc_html($votes_item->ip); ?></a>
                             <?php endif ?>

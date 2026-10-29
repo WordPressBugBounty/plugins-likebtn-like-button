@@ -3,7 +3,7 @@
   Plugin Name: Like Button Rating ♥ LikeBtn
   Plugin URI: https://likebtn.com/en/wordpress-like-button-plugin
   Description: Add Like button to posts, pages, comments, WooCommerce, BuddyPress, bbPress, custom post types! Sort content by likes! Get instant stats and insights!
-  Version: 2.6.64
+  Version: 2.6.65
   Text Domain: likebtn-like-button
   Author: LikeBtn
   Author URI: https://likebtn.com
@@ -14,7 +14,7 @@
 // ini_set('error_reporting', E_ALL);
 
 // Plugin version
-define('LIKEBTN_VERSION', '2.6.64');
+define('LIKEBTN_VERSION', '2.6.65');
 // Current DB version
 define('LIKEBTN_DB_VERSION', 20);
 
@@ -7733,6 +7733,21 @@ function likebtnGetCfRangesIpv6()
 }
 
 // Get visitor IP
+/**
+ * Returns the trimmed value if it is a valid IPv4/IPv6 address, empty string otherwise.
+ */
+function _likebtn_sanitize_ip($ip)
+{
+    if (!is_string($ip)) {
+        return '';
+    }
+    $ip = trim($ip);
+    if (filter_var($ip, FILTER_VALIDATE_IP) === false) {
+        return '';
+    }
+    return $ip;
+}
+
 function _likebtn_get_ip($disable_hashing = false)
 {
     // global $likebtn_cf_ip_ranges;
@@ -7741,13 +7756,17 @@ function _likebtn_get_ip($disable_hashing = false)
     $ip = sanitize_text_field($_SERVER['REMOTE_ADDR']);
 
     // Behind CloudFlare
+    $cf_ip = '';
     if (!empty($_SERVER['HTTP_CF_CONNECTING_IP'])) {
+        $cf_ip = _likebtn_sanitize_ip($_SERVER['HTTP_CF_CONNECTING_IP']);
+    }
+    if ($cf_ip !== '') {
         if (strlen($ip) == 39) {
             // ipv6
             $likebtn_cf_ip_ranges_ipv6 = likebtnGetCfRangesIpv6();
             foreach ($likebtn_cf_ip_ranges_ipv6 as $range) {
                 if (_likebtn_ip_in_range_ipv6($ip, $range)) {
-                    return sanitize_text_field($_SERVER['HTTP_CF_CONNECTING_IP']);
+                    return $cf_ip;
                 }
             }
         } else {
@@ -7755,26 +7774,30 @@ function _likebtn_get_ip($disable_hashing = false)
             $likebtn_cf_ip_ranges = likebtnGetCfRanges();
             foreach ($likebtn_cf_ip_ranges as $range) {
                 if (_likebtn_ip_in_range($ip, $range)) {
-                    return sanitize_text_field($_SERVER['HTTP_CF_CONNECTING_IP']);
+                    return $cf_ip;
                 }
             }
         }
     }
 
+    // Headers are controlled by the client, so only values which are valid IP addresses are accepted.
+    $header_ip = '';
     if (!empty($_SERVER['HTTP_CLIENT_IP'])) {
-        $ip = $_SERVER['HTTP_CLIENT_IP'];
-    } elseif (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
+        $header_ip = _likebtn_sanitize_ip($_SERVER['HTTP_CLIENT_IP']);
+    }
+    if ($header_ip === '' && !empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
         if (strpos($_SERVER['HTTP_X_FORWARDED_FOR'], ',') > 0) {
-            $addr = explode(",", sanitize_text_field($_SERVER['HTTP_X_FORWARDED_FOR']));
-            $x_ip = trim($addr[0]);
+            $addr = explode(",", $_SERVER['HTTP_X_FORWARDED_FOR']);
+            $x_ip = _likebtn_sanitize_ip($addr[0]);
         } else {
-            $x_ip = sanitize_text_field($_SERVER['HTTP_X_FORWARDED_FOR']);
+            $x_ip = _likebtn_sanitize_ip($_SERVER['HTTP_X_FORWARDED_FOR']);
         }
-        if ($x_ip != $_SERVER['SERVER_ADDR']) {
-            $ip = $x_ip;
+        if ($x_ip !== '' && $x_ip != $_SERVER['SERVER_ADDR']) {
+            $header_ip = $x_ip;
         }
-    } else {
-        $ip = sanitize_text_field($_SERVER['REMOTE_ADDR']);
+    }
+    if ($header_ip !== '') {
+        $ip = $header_ip;
     }
 
     if (get_option('likebtn_gdpr') == '1' && !$disable_hashing) {
@@ -8599,11 +8622,8 @@ function likebtn_strip_raw($text)
 
 function likebtn_is_real_ip($ip)
 {
-    if (strstr($ip, '.') || strstr($ip, ':')) {
-        return true;
-    } else {
-        return false;
-    }
+    // Hashed (GDPR) values and anything stored by older versions which is not an IP address are not real IPs.
+    return _likebtn_sanitize_ip($ip) !== '';
 }
 
 function likebtn_non_post_entity_types()

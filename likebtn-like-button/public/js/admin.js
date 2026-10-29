@@ -2118,8 +2118,19 @@ function likebtnSetChecked(el)
     el.prop("checked", true).attr("checked", "checked").change();
 }
 
+jQuery(document).on('click', 'a.likebtn_ip_info_link', function(e) {
+    e.preventDefault();
+    likebtnIpInfo(jQuery(this).attr('data-ip'));
+});
+
 function likebtnIpInfo(ip)
 {
+    ip = String(ip || '');
+    // Only IPv4/IPv6 characters are allowed.
+    if (!/^[0-9a-fA-F:.]+$/.test(ip)) {
+        return;
+    }
+
     var likebtn_ip_info = jQuery("#likebtn_ip_info").clone();
     likebtn_ip_info.removeClass('hidden');
     likebtn_ip_info.removeAttr('id');
@@ -2146,7 +2157,7 @@ function likebtnIpInfo(ip)
 
     likebtn_ip_info.dialog('open');
 
-    jQuery.get("//ipinfo.io/"+ip+"/", function(response) {
+    jQuery.get("//ipinfo.io/"+encodeURIComponent(ip)+"/", function(response) {
         if (!response || typeof(response.ip) == "undefined") {
             return;
         }
